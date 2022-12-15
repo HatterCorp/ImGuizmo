@@ -57,6 +57,8 @@ namespace ImSequencer
 
    bool Sequencer(SequenceInterface* sequence, int* currentFrame, bool* expanded, int* selectedEntry, int* firstFrame, int sequenceOptions)
    {
+      auto& style = ImGui::GetStyle();
+
       bool ret = false;
       ImGuiIO& io = ImGui::GetIO();
       int cx = (int)(io.MousePos.x);
@@ -171,7 +173,7 @@ namespace ImSequencer
          const float contentHeight = contentMax.y - contentMin.y;
 
          // full background
-         draw_list->AddRectFilled(canvas_pos, canvas_pos + canvas_size, 0xFF242424, 0);
+         draw_list->AddRectFilled(canvas_pos, canvas_pos + canvas_size, ImGui::ColorConvertFloat4ToU32(style.Colors[ImGuiCol_ChildBg]), 0);
 
          // current frame top
          ImRect topRect(ImVec2(canvas_pos.x + legendWidth, canvas_pos.y), ImVec2(canvas_pos.x + canvas_size.x, canvas_pos.y + ItemHeight));
@@ -345,8 +347,8 @@ namespace ImSequencer
             ImVec2 slotP1(pos.x + *start * framePixelWidth, pos.y + 2);
             ImVec2 slotP2(pos.x + *end * framePixelWidth + framePixelWidth, pos.y + ItemHeight - 2);
             ImVec2 slotP3(pos.x + *end * framePixelWidth + framePixelWidth, pos.y + ItemHeight - 2 + localCustomHeight);
-            unsigned int slotColor = color | 0xFF000000;
-            unsigned int slotColorHalf = (color & 0xFFFFFF) | 0x40000000;
+            unsigned int slotColor = color;// | 0xFF000000;
+            unsigned int slotColorHalf = (color & 0xFFFFFF) | 0x20000000;
 
             if (slotP1.x <= (canvas_size.x + contentMin.x) && slotP2.x >= (contentMin.x + legendWidth))
             {
@@ -469,9 +471,9 @@ namespace ImSequencer
          // cursor
          if (currentFrame && firstFrame && *currentFrame >= *firstFrame && *currentFrame <= sequence->GetFrameMax())
          {
-            static const float cursorWidth = 8.f;
+            static const float cursorWidth = 2.f;
             float cursorOffset = contentMin.x + legendWidth + (*currentFrame - firstFrameUsed) * framePixelWidth + framePixelWidth / 2 - cursorWidth * 0.5f;
-            draw_list->AddLine(ImVec2(cursorOffset, canvas_pos.y), ImVec2(cursorOffset, contentMax.y), 0xA02A2AFF, cursorWidth);
+            draw_list->AddLine(ImVec2(cursorOffset, canvas_pos.y), ImVec2(cursorOffset, contentMax.y), ImGui::ColorConvertFloat4ToU32(style.Colors[ImGuiCol_PlotHistogram]), cursorWidth);
             char tmps[512];
             ImFormatString(tmps, IM_ARRAYSIZE(tmps), "%d", *currentFrame);
             draw_list->AddText(ImVec2(cursorOffset + 10, canvas_pos.y + 2), 0xFF2A2AFF, tmps);

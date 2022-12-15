@@ -104,6 +104,7 @@ namespace ImCurveEdit
 
    static int DrawPoint(ImDrawList* draw_list, ImVec2 pos, const ImVec2 size, const ImVec2 offset, bool edited)
    {
+      auto& style = ImGui::GetStyle();
       int ret = 0;
       ImGuiIO& io = ImGui::GetIO();
 
@@ -126,15 +127,17 @@ namespace ImCurveEdit
       if (edited)
          draw_list->AddPolyline(offsets, 4, 0xFFFFFFFF, true, 3.0f);
       else if (ret)
-         draw_list->AddPolyline(offsets, 4, 0xFF80B0FF, true, 2.0f);
+         draw_list->AddPolyline(offsets, 4, ImGui::ColorConvertFloat4ToU32(style.Colors[ImGuiCol_PlotLinesHovered]), true, 2.0f);
       else
-         draw_list->AddPolyline(offsets, 4, 0xFF0080FF, true, 2.0f);
+         draw_list->AddPolyline(offsets, 4, ImGui::ColorConvertFloat4ToU32(style.Colors[ImGuiCol_PlotLines]), true, 2.0f);
 
       return ret;
    }
 
    int Edit(Delegate& delegate, const ImVec2& size, unsigned int id, const ImRect* clippingRect, ImVector<EditPoint>* selectedPoints)
    {
+      auto& style = ImGui::GetStyle();
+
       static bool selectingQuad = false;
       static ImVec2 quadSelection;
       static int overCurve = -1;
@@ -230,7 +233,7 @@ namespace ImCurveEdit
          const ImVec2* pts = delegate.GetPoints(c);
          uint32_t curveColor = delegate.GetCurveColor(c);
          if ((c == highLightedCurveIndex && selection.empty() && !selectingQuad) || movingCurve == c)
-            curveColor = 0xFFFFFFFF;
+            curveColor = ImGui::ColorConvertFloat4ToU32(style.Colors[ImGuiCol_PlotLinesHovered]);
 
          for (size_t p = 0; p < ptCount - 1; p++)
          {
