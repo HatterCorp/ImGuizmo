@@ -30,6 +30,10 @@
 #include <set>
 #include <vector>
 
+#include <iomanip>
+#include <sstream>
+#include <string>
+
 #if defined(_MSC_VER) || defined(__MINGW32__)
 #include <malloc.h>
 #endif
@@ -102,7 +106,7 @@ namespace ImCurveEdit
       return sqrtf(dx * dx + dy * dy);
    }
 
-   static int DrawPoint(ImDrawList* draw_list, ImVec2 pos, const ImVec2 size, const ImVec2 offset, bool edited)
+   static int DrawPoint(ImDrawList* draw_list, ImVec2 pos, ImVec2 real_pos, const ImVec2 size, const ImVec2 offset, bool edited)
    {
       int ret = 0;
       ImGuiIO& io = ImGui::GetIO();
@@ -129,6 +133,18 @@ namespace ImCurveEdit
          draw_list->AddPolyline(offsets, 4, 0xFF80B0FF, true, 2.0f);
       else
          draw_list->AddPolyline(offsets, 4, 0xFF0080FF, true, 2.0f);
+
+      if (ret)
+      {
+         auto to_string_with_precision = [](double value, int precision)
+         {
+            std::ostringstream out;
+            out << std::fixed << std::setprecision(precision) << value;
+            return out.str();
+         };
+         std::string posString = "(" + to_string_with_precision(real_pos.x, 2) + ", " + to_string_with_precision(real_pos.y, 2) + ")";
+         ImGui::SetTooltip(posString.c_str());
+      }
 
       return ret;
    }
@@ -285,7 +301,7 @@ namespace ImCurveEdit
 
          for (size_t p = 0; p < ptCount; p++)
          {
-            const int drawState = DrawPoint(draw_list, pointToRange(pts[p]), viewSize, offset, (selection.find({ int(c), int(p) }) != selection.end() && movingCurve == -1 && !scrollingV));
+            const int drawState = DrawPoint(draw_list, pointToRange(pts[p]), pts[p], viewSize, offset, (selection.find({ int(c), int(p) }) != selection.end() && movingCurve == -1 && !scrollingV));
             if (drawState && movingCurve == -1 && !selectingQuad)
             {
                overCurveOrPoint = true;
