@@ -26,6 +26,7 @@
 #pragma once
 
 #include <cstddef>
+#include "imgui.h"
 
 struct ImDrawList;
 struct ImRect;
@@ -72,8 +73,25 @@ namespace ImSequencer
        virtual ~SequenceInterface() = default;
    };
 
+   struct SequencerState
+   {
+      float framePixelWidth = 10.f;
+      float framePixelWidthTarget = 10.f;
+      int movingEntry = -1;
+      int movingPos = -1;
+      int movingPart = -1;
+      bool MovingScrollBar = false;
+      bool MovingCurrentFrame = false;
+      bool panningView = false;
+      ImVec2 panningViewSource;
+      int panningViewFrame;
+      const float cursorWidth = 2.f;
+      bool sizingRBar = false;
+      bool sizingLBar = false;
+      const float MinBarWidth = 44.f;
+   };
 
    // return true if selection is made
-   bool Sequencer(SequenceInterface* sequence, int* currentFrame, bool* expanded, int* selectedEntry, int* firstFrame, int sequenceOptions);
+   bool Sequencer(SequencerState* state, SequenceInterface* sequence, int* currentFrame, bool* expanded, int* selectedEntry, int* firstFrame, int sequenceOptions);
 
 }
