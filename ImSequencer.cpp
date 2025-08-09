@@ -334,55 +334,58 @@ namespace ImSequencer
             sequence->Get(i, &start, &end, NULL, &color);
             size_t localCustomHeight = sequence->GetCustomHeight(i);
 
-            ImVec2 pos = ImVec2(contentMin.x + legendWidth - firstFrameUsed * state->framePixelWidth, contentMin.y + ItemHeight * i + 1 + customHeight);
-            ImVec2 slotP1(pos.x + *start * state->framePixelWidth, pos.y + 2);
-            ImVec2 slotP2(pos.x + *end * state->framePixelWidth + state->framePixelWidth, pos.y + ItemHeight - 2);
-            ImVec2 slotP3(pos.x + *end * state->framePixelWidth + state->framePixelWidth, pos.y + ItemHeight - 2 + localCustomHeight);
-            unsigned int slotColor = color;// | 0xFF000000;
-            unsigned int slotColorHalf = (color & 0xFFFFFF) | 0x20000000;
+            if (sequenceOptions & SEQUENCER_DRAW_SUB_RANGE)
+            {
+               ImVec2 pos = ImVec2(contentMin.x + legendWidth - firstFrameUsed * state->framePixelWidth, contentMin.y + ItemHeight * i + 1 + customHeight);
+               ImVec2 slotP1(pos.x + *start * state->framePixelWidth, pos.y + 2);
+               ImVec2 slotP2(pos.x + *end * state->framePixelWidth + state->framePixelWidth, pos.y + ItemHeight - 2);
+               ImVec2 slotP3(pos.x + *end * state->framePixelWidth + state->framePixelWidth, pos.y + ItemHeight - 2 + localCustomHeight);
+               unsigned int slotColor = color;// | 0xFF000000;
+               unsigned int slotColorHalf = (color & 0xFFFFFF) | 0x20000000;
 
-            if (slotP1.x <= (canvas_size.x + contentMin.x) && slotP2.x >= (contentMin.x + legendWidth))
-            {
-               draw_list->AddRectFilled(slotP1, slotP3, slotColorHalf, 2);
-               draw_list->AddRectFilled(slotP1, slotP2, slotColor, 2);
-            }
-            if (ImRect(slotP1, slotP2).Contains(io.MousePos) && io.MouseDoubleClicked[0])
-            {
-               sequence->DoubleClick(i);
-            }
-            // Ensure grabbable handles
-            const float max_handle_width = slotP2.x - slotP1.x / 3.0f;
-            const float min_handle_width = ImMin(10.0f, max_handle_width);
-            const float handle_width = ImClamp(state->framePixelWidth / 2.0f, min_handle_width, max_handle_width);
-            ImRect rects[3] = { ImRect(slotP1, ImVec2(slotP1.x + handle_width, slotP2.y))
-                , ImRect(ImVec2(slotP2.x - handle_width, slotP1.y), slotP2)
-                , ImRect(slotP1, slotP2) };
-
-            const unsigned int quadColor[] = { 0xFFFFFFFF, 0xFFFFFFFF, slotColor + (selected ? 0 : 0x202020) };
-            if (state->movingEntry == -1 && (sequenceOptions & SEQUENCER_EDIT_STARTEND) && backgroundRect.Contains(io.MousePos))
-            {
-               for (int j = 2; j >= 0; j--)
+               if (slotP1.x <= (canvas_size.x + contentMin.x) && slotP2.x >= (contentMin.x + legendWidth))
                {
-                  ImRect& rc = rects[j];
-                  if (!rc.Contains(io.MousePos))
-                     continue;
-                  draw_list->AddRectFilled(rc.Min, rc.Max, quadColor[j], 2);
+                  draw_list->AddRectFilled(slotP1, slotP3, slotColorHalf, 2);
+                  draw_list->AddRectFilled(slotP1, slotP2, slotColor, 2);
                }
-
-               for (int j = 0; j < 3; j++)
+               if (ImRect(slotP1, slotP2).Contains(io.MousePos) && io.MouseDoubleClicked[0])
                {
-                  ImRect& rc = rects[j];
-                  if (!rc.Contains(io.MousePos))
-                     continue;
-                  if (!ImRect(childFramePos, childFramePos + childFrameSize).Contains(io.MousePos))
-                     continue;
-                  if (ImGui::IsMouseClicked(0) && !state->MovingScrollBar && !state->MovingCurrentFrame)
+                  sequence->DoubleClick(i);
+               }
+               // Ensure grabbable handles
+               const float max_handle_width = slotP2.x - slotP1.x / 3.0f;
+               const float min_handle_width = ImMin(10.0f, max_handle_width);
+               const float handle_width = ImClamp(state->framePixelWidth / 2.0f, min_handle_width, max_handle_width);
+               ImRect rects[3] = { ImRect(slotP1, ImVec2(slotP1.x + handle_width, slotP2.y))
+                  , ImRect(ImVec2(slotP2.x - handle_width, slotP1.y), slotP2)
+                  , ImRect(slotP1, slotP2) };
+
+               const unsigned int quadColor[] = { 0xFFFFFFFF, 0xFFFFFFFF, slotColor + (selected ? 0 : 0x202020) };
+               if (state->movingEntry == -1 && (sequenceOptions & SEQUENCER_EDIT_STARTEND) && backgroundRect.Contains(io.MousePos))
+               {
+                  for (int j = 2; j >= 0; j--)
                   {
-                     state->movingEntry = i;
-                     state->movingPos = cx;
-                     state->movingPart = j + 1;
-                     sequence->BeginEdit(state->movingEntry);
-                     break;
+                     ImRect& rc = rects[j];
+                     if (!rc.Contains(io.MousePos))
+                        continue;
+                     draw_list->AddRectFilled(rc.Min, rc.Max, quadColor[j], 2);
+                  }
+
+                  for (int j = 0; j < 3; j++)
+                  {
+                     ImRect& rc = rects[j];
+                     if (!rc.Contains(io.MousePos))
+                        continue;
+                     if (!ImRect(childFramePos, childFramePos + childFrameSize).Contains(io.MousePos))
+                        continue;
+                     if (ImGui::IsMouseClicked(0) && !state->MovingScrollBar && !state->MovingCurrentFrame)
+                     {
+                        state->movingEntry = i;
+                        state->movingPos = cx;
+                        state->movingPart = j + 1;
+                        sequence->BeginEdit(state->movingEntry);
+                        break;
+                     }
                   }
                }
             }
