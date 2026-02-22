@@ -70,7 +70,7 @@ namespace ImCurveEdit
       bool pointsMoved = false;
       ImVec2 mousePosOrigin;
       std::vector<ImVec2> originalPoints;
-      virtual size_t GetCurveCount() = 0;
+      virtual size_t GetCurveCount() const = 0;
       virtual bool IsVisible(size_t /*curveIndex*/) { return true; }
       virtual CurveType GetCurveType(size_t /*curveIndex*/) const { return CurveLinear; }
       virtual ImVec2& GetMin() = 0;

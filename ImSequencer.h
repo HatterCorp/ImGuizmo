@@ -41,7 +41,8 @@ namespace ImSequencer
       SEQUENCER_DEL = 1 << 5,
       SEQUENCER_COPYPASTE = 1 << 6,
       SEQUENCER_EDIT_ALL = SEQUENCER_EDIT_STARTEND | SEQUENCER_CHANGE_FRAME,
-      SEQUENCER_DRAW_SUB_RANGE = 1 << 7
+      SEQUENCER_DRAW_SUB_RANGE = 1 << 7,
+      SEQUENCER_EXPANDABLE = 1 << 8,
    };
 
    struct SequenceInterface
@@ -49,13 +50,15 @@ namespace ImSequencer
       bool focused = false;
       virtual int GetFrameMin() const = 0;
       virtual int GetFrameMax() const = 0;
-      virtual int GetItemCount() const = 0;
 
       virtual void BeginEdit(int /*index*/) {}
       virtual void EndEdit() {}
-      virtual int GetItemTypeCount() const { return 0; }
-      virtual const char* GetItemTypeName(int /*typeIndex*/) const { return ""; }
-      virtual const char* GetItemLabel(int /*index*/) const { return ""; }
+      virtual int GetCurveTypeCount() const { return 0; }
+      virtual const char* GetCurveTypeName(int /*typeIndex*/) const { return ""; }
+      virtual int GetCurveGroupCount() const = 0;
+      virtual const char* GetCurveGroupName(int /*index*/) const { return ""; }
+      virtual const size_t GetCurveGroupNumCurves(int /*index*/) const { return 0;}
+      virtual const std::string GetCurveGroupCurveName(int /*index*/, int /*curve_index*/) const { return ""; }
       virtual const char* GetCollapseFmt() const { return "%d Frames / %d entries"; }
 
       virtual void Get(int index, int** start, int** end, int* type, unsigned int* color) = 0;

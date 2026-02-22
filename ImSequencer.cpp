@@ -70,7 +70,7 @@ namespace ImSequencer
       int ItemHeight = 20;
 
       bool popupOpened = false;
-      int sequenceCount = sequence->GetItemCount();
+      int sequenceCount = sequence->GetCurveGroupCount();
       if (!sequenceCount)
          return false;
       ImGui::BeginGroup();
@@ -188,6 +188,10 @@ namespace ImSequencer
 
          //header
          draw_list->AddRectFilled(canvas_pos, ImVec2(canvas_size.x + canvas_pos.x, canvas_pos.y + ItemHeight), 0xFF3D3837, 0);
+
+         // This code could be used to create new curve groups.
+         // Currently, we do not use this in Alyce as its design was confusing.
+#if 0
          if (sequenceOptions & SEQUENCER_ADD)
          {
             if (SequencerAddDelButton(draw_list, ImVec2(canvas_pos.x + legendWidth - ItemHeight, canvas_pos.y + 2), true))
@@ -195,17 +199,18 @@ namespace ImSequencer
 
             if (ImGui::BeginPopup("addEntry"))
             {
-               for (int i = 0; i < sequence->GetItemTypeCount(); i++)
-                  if (ImGui::Selectable(sequence->GetItemTypeName(i)))
+               for (int i = 0; i < sequence->GetCurveTypeCount(); i++)
+                  if (ImGui::Selectable(sequence->GetCurveTypeName(i)))
                   {
                      sequence->Add(i);
-                     *selectedEntry = sequence->GetItemCount() - 1;
+                     *selectedEntry = sequence->GetCurveGroupCount() - 1;
                   }
 
                ImGui::EndPopup();
                popupOpened = true;
             }
          }
+#endif
 
          //header frame number and lines
          int modFrameCount = 10;
@@ -273,15 +278,55 @@ namespace ImSequencer
             int type;
             sequence->Get(i, NULL, NULL, &type, NULL);
             ImVec2 tpos(contentMin.x + 3, contentMin.y + i * ItemHeight + 2 + customHeight);
-            draw_list->AddText(tpos, 0xFFFFFFFF, sequence->GetItemLabel(i));
+            draw_list->AddText(tpos, 0xFFFFFFFF, sequence->GetCurveGroupName(i));
 
+            // if (sequenceOptions & SEQUENCER_DEL)
+            // {
+            //    if (SequencerAddDelButton(draw_list, ImVec2(contentMin.x + legendWidth - ItemHeight + 2 - 10, tpos.y + 2), false))
+            //       delEntry = i;
+
+            //    if (SequencerAddDelButton(draw_list, ImVec2(contentMin.x + legendWidth - ItemHeight - ItemHeight + 2 - 10, tpos.y + 2), true))
+            //       dupEntry = i;
+            // }
             if (sequenceOptions & SEQUENCER_DEL)
             {
                if (SequencerAddDelButton(draw_list, ImVec2(contentMin.x + legendWidth - ItemHeight + 2 - 10, tpos.y + 2), false))
-                  delEntry = i;
+                  ImGui::OpenPopup("Remove Curve");
 
+
+               if (ImGui::BeginPopup("Remove Curve"))
+               {
+                  auto num_curves = sequence->GetCurveGroupNumCurves(i);
+                  for (size_t j = 0; j < num_curves; j++)
+                     if (ImGui::Selectable(sequence->GetCurveGroupCurveName(i, j).c_str()))
+                     {
+                        sequence->Del(j);
+                        *selectedEntry = sequence->GetCurveGroupCount() - 1;
+                        break;
+                     }
+
+                  ImGui::EndPopup();
+                  popupOpened = true;
+               }
+            }
+            if (sequenceOptions & SEQUENCER_ADD)
+            {
                if (SequencerAddDelButton(draw_list, ImVec2(contentMin.x + legendWidth - ItemHeight - ItemHeight + 2 - 10, tpos.y + 2), true))
-                  dupEntry = i;
+                  ImGui::OpenPopup("Add Curve");
+
+               if (ImGui::BeginPopup("Add Curve"))
+               {
+                  auto num_curve_types = sequence->GetCurveTypeCount();
+                  for (int j = 0; j < num_curve_types; j++)
+                     if (ImGui::Selectable(sequence->GetCurveTypeName(j)))
+                     {
+                        sequence->Add(j);
+                        *selectedEntry = sequence->GetCurveGroupCount() - 1;
+                     }
+
+                  ImGui::EndPopup();
+                  popupOpened = true;
+               }
             }
             customHeight += sequence->GetCustomHeight(i);
          }
@@ -665,7 +710,7 @@ namespace ImSequencer
          }
       }
 
-      if (expanded)
+      if (sequenceOptions & SEQUENCER_EXPANDABLE && expanded)
       {
          if (SequencerAddDelButton(draw_list, ImVec2(canvas_pos.x + 2, canvas_pos.y + 2), !*expanded))
             *expanded = !*expanded;
@@ -674,7 +719,7 @@ namespace ImSequencer
       if (delEntry != -1)
       {
          sequence->Del(delEntry);
-         if (selectedEntry && (*selectedEntry == delEntry || *selectedEntry >= sequence->GetItemCount()))
+         if (selectedEntry && (*selectedEntry == delEntry || *selectedEntry >= sequence->GetCurveGroupCount()))
             *selectedEntry = -1;
       }
 

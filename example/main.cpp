@@ -400,11 +400,11 @@ struct MySequence : public ImSequencer::SequenceInterface
    virtual int GetFrameMax() const {
       return mFrameMax;
    }
-   virtual int GetItemCount() const { return (int)myItems.size(); }
+   virtual int GetCurveGroupCount() const { return (int)myItems.size(); }
 
-   virtual int GetItemTypeCount() const { return sizeof(SequencerItemTypeNames) / sizeof(char*); }
-   virtual const char* GetItemTypeName(int typeIndex) const { return SequencerItemTypeNames[typeIndex]; }
-   virtual const char* GetItemLabel(int index) const
+   virtual int GetCurveTypeCount() const { return sizeof(SequencerItemTypeNames) / sizeof(char*); }
+   virtual const char* GetCurveTypeName(int typeIndex) const { return SequencerItemTypeNames[typeIndex]; }
+   virtual const char* GetCurveGroupName(int index) const
    {
       static char tmps[512];
       snprintf(tmps, 512, "[%02d] %s", index, SequencerItemTypeNames[myItems[index].mType]);
