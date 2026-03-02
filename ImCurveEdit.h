@@ -60,7 +60,17 @@ namespace ImCurveEdit
    struct Delegate
    {
       bool focused = false;
-      virtual size_t GetCurveCount() = 0;
+      bool selectingQuad = false;
+      ImVec2 quadSelection;
+      int overCurve = -1;
+      int movingCurve = -1;
+      bool scrollingV = false;
+      std::set<EditPoint> selection;
+      bool overSelectedPoint = false;
+      bool pointsMoved = false;
+      ImVec2 mousePosOrigin;
+      std::vector<ImVec2> originalPoints;
+      virtual size_t GetCurveCount() const = 0;
       virtual bool IsVisible(size_t /*curveIndex*/) { return true; }
       virtual CurveType GetCurveType(size_t /*curveIndex*/) const { return CurveLinear; }
       virtual ImVec2& GetMin() = 0;
